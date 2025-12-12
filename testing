@@ -1,0 +1,113 @@
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
+
+namespace GetFiles
+{
+    internal class Program
+    {
+        static void Main(string[] args)
+        {
+            var filePath = " ";//add path
+            var text = getFileReadAsync(filePath);
+            Console.WriteLine(text);
+        }
+
+
+        public static byte[] GetFileFileStream(string docPath)
+        {
+            byte[] content = new byte[0];
+            const int bufferSize = 4096;
+            const int maxAttempts = 5;
+            const int delay = 200;
+
+            for (int attempt = 1; attempt <= maxAttempts; attempt++)
+            {
+                try
+                {
+                    using (var fs = new FileStream(docPath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
+                    using (var bs = new BufferedStream(fs, bufferSize))
+                    using (var br = new BinaryReader(bs))
+                    {
+                        content = new byte[fs.Length];
+                        br.Read(content, 0, content.Length);
+                    }
+
+
+                }
+                catch (IOException)
+                {
+                    if (attempt == maxAttempts)
+                        throw;
+
+                    Thread.Sleep(delay);
+                }
+                catch (UnauthorizedAccessException)
+                {
+                    if (attempt == maxAttempts)
+                        throw;
+
+                }
+            }
+
+            return content;
+        }
+
+        public static byte[] getFileReadAsync(string path)
+        {
+            //byte[] content = new byte[0];
+
+            try
+            {
+                var content = File.ReadAllBytesAsync(path);
+                Console.WriteLine(content.Status);
+                return content.Result;
+            }
+            catch (IOException ex)
+            {
+                Console.WriteLine($"IO Exception: {ex.Message}");
+                throw;
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                Console.WriteLine($"Unauthorized Access: {ex.Message}");
+                throw;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"General Exception: {ex.Message}");
+                throw;
+            }
+
+
+        }
+
+        public static byte[] getFileRead(string path)
+        {
+            byte[] content = new byte[0];
+
+            try
+            {
+                content = File.ReadAllBytes(path);
+            }
+            catch (IOException ex)
+            {
+                Console.WriteLine($"IO Exception: {ex.Message}");
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                Console.WriteLine($"Unauthorized Access: {ex.Message}");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"General Exception: {ex.Message}");
+            }
+            return content;
+        }
+    }
+}
+
