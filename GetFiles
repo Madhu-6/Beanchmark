@@ -148,6 +148,29 @@ namespace GetFiles
             }
             return content;
         }
+
+
+         public byte[] getFileFromSharedPath( string path)
+         {
+             
+             using (var fs = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read))
+             {
+                 var len = (int)fs.Length;
+        
+                 var buffer = new byte[len];
+                 int offset = 0;
+                 while (offset < len)
+                 {
+                     int read = fs.Read(buffer, offset, len - offset);
+                     if (read == 0) break;
+                     offset += read;
+                 }
+                 return buffer;
+             }
+         }
+
+
+    
     }
 }
 
